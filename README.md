@@ -66,7 +66,7 @@ kubectl get pods
 
 **4. Setup Baza de Date**
 1. Deschideți Adminer: `kubectl port-forward svc/adminer-service 8080:8080`
-2. Accesați `http://localhost:>8080` (Server: `mysql-service`, User: `root`, Pass: `password`).
+2. Accesați `http://localhost:8080` (Server: `mysql-service`, User: `root`, Pass: `password`).
 3. Rulați SQL:
 ```sql
 CREATE TABLE tasks (
@@ -110,6 +110,10 @@ curl -X POST http://localhost:5001/login -H "Content-Type: application/json" -d 
 ```bash
 curl -H "Authorization: Bearer valid-token-123" http://localhost:5002/tasks
 ```
+
+4. Accesare Frontend:
+Deschideți browserul și accesați: `http://localhost:8081`
+(Asigurați-vă că tunelul către `frontend-service` din pasul 1 este activ).
 
 ### Monitorizare
 Dashboard-ul Grafana poate fi accesat la `http://localhost:3000` (după port-forward). Se recomandă importarea dashboard-ului cu ID: 12708 pentru vizualizarea resurselor clusterului (CPU, Memorie, Pod Status).
