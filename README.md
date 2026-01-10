@@ -112,6 +112,7 @@ curl -H "Authorization: Bearer valid-token-123" http://localhost:5002/tasks
 ```
 
 4. Accesare Frontend:
+
 Deschideți browserul și accesați: `http://localhost:8081`
 (Asigurați-vă că tunelul către `frontend-service` din pasul 1 este activ).
 
