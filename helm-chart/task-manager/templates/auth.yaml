@@ -15,6 +15,9 @@ spec:
       containers:
       - name: auth
         image: "{{ .Values.auth.repository }}:{{ .Values.auth.tag }}"
+        env:
+        - name: DB_HOST
+          value: "mysql-service"
         ports:
         - containerPort: {{ .Values.auth.port }}
 ---
