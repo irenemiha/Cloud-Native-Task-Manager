@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-service
+spec:
+  replicas: {{ .Values.tasks.replicaCount }}
+  selector:
+    matchLabels:
+      app: tasks
+  template:
+    metadata:
+      labels:
+        app: tasks
+    spec:
+      containers:
+      - name: tasks
+        image: "{{ .Values.tasks.repository }}:{{ .Values.tasks.tag }}"
+        env:
+        - name: DB_HOST
+          value: "mysql-service"
+        - name: AUTH_URL
+          value: "http://auth-service:5001/verify"
+        ports:
+        - containerPort: {{ .Values.tasks.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: task-service
+spec:
+  type: NodePort
+  selector:
+    app: tasks
+  ports:
+    - port: 5002
+      targetPort: 5002
+      nodePort: 30002 # Accesibil extern

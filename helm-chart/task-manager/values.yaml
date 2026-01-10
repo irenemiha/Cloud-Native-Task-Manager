@@ -1,0 +1,33 @@
+auth:
+  repository: auth-service
+  tag: "v1"
+  replicaCount: 1
+  port: 5001
+
+tasks:
+  repository: task-service
+  tag: "v1"
+  replicaCount: 2
+  port: 5002
+  nodePort: 30002
+
+mysql:
+  image: mysql:8.0
+  port: 3306
+  storage: 1Gi
+  rootPassword: "password"
+  database: "tasks_db"
+
+adminer:
+  image: adminer:latest
+  port: 8080
+  nodePort: 30003
+
+portainer:
+  image: portainer/portainer-ce:latest
+  port: 9000
+  nodePort: 30004
+
+monitoring:
+  enabled: true
+  grafanaPort: 30005
