@@ -15,6 +15,8 @@ Aplicația este compusă din 5 microservicii independente:
 
 5. **Portainer**: Instrument de gestiune vizuală a resurselor din clusterul Kubernetes.
 
+6. **Frontend Service** (Nginx/HTML/JS): Interfață web tip "Weekly Planner" pentru gestionarea sarcinilor.
+
 ### Tehnologii Utilizate
 - **Containerizare**: Docker
 - **Orchestrare**: Kubernetes (Cluster Kind)
@@ -43,9 +45,14 @@ docker build -t auth-service:v1 .
 cd ../task-service
 docker build -t task-service:v1 .
 
+# Build Frontend Service
+cd ../frontend
+docker build -t frontend-service:v1 .
+
 # Încărcare imagini în Kind
 kind load docker-image auth-service:v1 --name task-manager-cluster
 kind load docker-image task-service:v1 --name task-manager-cluster
+kind load docker-image frontend-service:v1 --name task-manager-cluster
 ```
 
 **3. Instalarea aplicației cu Helm**
@@ -62,7 +69,14 @@ kubectl get pods
 2. Accesați `http://localhost:>8080` (Server: `mysql-service`, User: `root`, Pass: `password`).
 3. Rulați SQL:
 ```sql
-CREATE TABLE tasks (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255) NOT NULL);
+CREATE TABLE tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    deadline DATE,
+    urgency ENUM('Low', 'Medium', 'High') DEFAULT 'Low',
+    status VARCHAR(10) DEFAULT 'NEW'
+);
 ```
 
 **5. Monitorizare (Prometheus & Grafana)**
@@ -85,6 +99,7 @@ kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | bas
 1. Pornire Tuneluri:
 - `kubectl port-forward svc/auth-service 5001:5001`
 - `kubectl port-forward svc/task-service 5002:5002`
+- `kubectl port-forward svc/frontend-service 8081:80`
 
 2. Obținere Token:
 ```bash

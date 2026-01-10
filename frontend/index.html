@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weekly Planner</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #EADDCA; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Login */
+        #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-box { background: #EADDCA; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; }
+        
+        /* Inputs */
+        input, select, textarea { width: 100%; margin-bottom: 1rem; padding: 8px; box-sizing: border-box; border: 1px solid #5C4033; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background: #5C4033; color: #EADDCA; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #483C32; }
+        button.delete { background: #A52A2A; margin-top: 10px; }
+        button.delete:hover { background: #722F37; }
+
+        /* Board */
+        #board { display: none; overflow-x: auto; height: 100%; padding: 20px; box-sizing: border-box; }
+        .board-container { display: flex; gap: 10px; height: 85%; min-width: 1800px; }
+        
+        /* Columns */
+        .column { background: #EADDCA; border-radius: 6px; width: 200px; display: flex; flex-direction: column; max-height: 100%; border-right: 2px solid #5C4033; border-top-right-radius: 0; border-bottom-right-radius: 0;}
+        .column:last-child { border-right: none; }
+        .column-header { padding: 10px; font-weight: bold; text-align: center; border-bottom: 2px solid #5C4033; text-transform: uppercase; }
+        .task-list { flex-grow: 1; padding: 8px; overflow-y: auto; min-height: 100px; }
+        
+        /* Cards */
+        .card { background: #FFFFF0; border-radius: 4px; padding: 10px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); cursor: pointer; border-left: 5px solid #5C4033; position: relative; }
+        .card:hover { background: #D2B48C; }
+        .card-title { font-weight: 600; margin-bottom: 5px; }
+        .card-desc { font-size: 0.85em; color: #5C4033; margin-bottom: 5px; white-space: pre-wrap; }
+        .card-meta { font-size: 0.75em; color: #5C4033; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Urgency Colors */
+        .urgent-High { border-left-color: #A52A2A !important; }
+        .urgent-Medium { border-left-color: #E1C16E !important; }
+        .urgent-Low { border-left-color: #808000 !important; }
+
+        /* Creation Form */
+        #new-task-form { background: #C19A6B; padding: 20px; border-bottom: 1px solid #D2B48C; display: flex; gap: 10px; align-items: flex-end; }
+        .form-group { display: flex; flex-direction: column; width: 150px; }
+        .form-group.large { width: 300px; }
+        label { font-size: 0.8em; margin-bottom: 4px; font-weight: bold; }
+
+        /* Modal (Popup) */
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #C4A484; margin: 10% auto; padding: 20px; border: 1px solid #967969; width: 400px; border-radius: 8px; }
+        .close { color: #967969; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="text-align:center">Weekly Planner</h2>
+            <input type="text" id="username" value="admin" placeholder="Username">
+            <input type="password" id="password" value="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <p id="error-msg" style="color:red; text-align:center; display:none"></p>
+        </div>
+    </div>
+
+    <div id="main-app" style="display:none; height:100%">
+        <div id="new-task-form">
+            <div class="form-group large">
+                <label>Title</label>
+                <input type="text" id="t-title" placeholder="e.g. Fix Login Bug">
+            </div>
+            <div class="form-group large">
+                <label>Description</label>
+                <input type="text" id="t-desc" placeholder="Details...">
+            </div>
+            <div class="form-group">
+                <label>Deadline</label>
+                <input type="date" id="t-date">
+            </div>
+            <div class="form-group">
+                <label>Urgency</label>
+                <select id="t-urgency">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+            <button onclick="addTask()" style="width: auto; height: 40px;">Add Card</button>
+        </div>
+
+        <div id="board">
+            <div class="board-container" id="board-columns"></div>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Edit Task</h3>
+            <input type="hidden" id="edit-id">
+            
+            <label>Title</label>
+            <input type="text" id="edit-title">
+            
+            <label>Description</label>
+            <textarea id="edit-desc" rows="3"></textarea>
+            
+            <label>Deadline</label>
+            <input type="date" id="edit-date">
+            
+            <label>Urgency</label>
+            <select id="edit-urgency">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
+
+            <button onclick="saveEdit()">Save Changes</button>
+            <button class="delete" onclick="deleteTask()">Delete Task</button>
+        </div>
+    </div>
+
+    <script>
+        const API_AUTH = 'http://localhost:5001';
+        const API_TASK = 'http://localhost:5002';
+        const COLUMNS = ['NEW', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN', 'DONE'];
+        
+        let token = localStorage.getItem('token');
+        if(token) showApp();
+
+        async function login() {
+            try {
+                const res = await fetch(`${API_AUTH}/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    showApp();
+                } else {
+                    document.getElementById('error-msg').style.display = 'block';
+                    document.getElementById('error-msg').innerText = "Invalid Credentials";
+                }
+            } catch(e) { alert("Check Auth Service Connection (Port 5001)"); }
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('board').style.display = 'block';
+            renderColumns();
+            loadTasks();
+        }
+
+        function renderColumns() {
+            const container = document.getElementById('board-columns');
+            container.innerHTML = COLUMNS.map(col => `
+                <div class="column" ondrop="drop(event, '${col}')" ondragover="allowDrop(event)">
+                    <div class="column-header">${col}</div>
+                    <div class="task-list" id="col-${col}"></div>
+                </div>
+            `).join('');
+        }
+
+        async function loadTasks() {
+            const res = await fetch(`${API_TASK}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const tasks = await res.json();
+            COLUMNS.forEach(c => document.getElementById(`col-${c}`).innerHTML = '');
+            
+            tasks.forEach(task => {
+                const status = COLUMNS.includes(task.status) ? task.status : 'NEW';
+                createCard(task, status);
+            });
+        }
+
+        function createCard(task, columnId) {
+            const div = document.createElement('div');
+            div.className = `card urgent-${task.urgency}`; 
+            div.draggable = true;
+            div.id = `task-${task.id}`;
+            div.ondragstart = (e) => e.dataTransfer.setData("text", task.id);
+            
+            div.onclick = () => openEditModal(task);
+
+            div.innerHTML = `
+                <div class="card-title">${task.title}</div>
+                <div class="card-desc">${task.description || ''}</div>
+                <div class="card-meta">
+                    <span>📅 ${task.deadline ? task.deadline : 'No Date'}</span>
+                    ${task.urgency === 'High' ? '!!' : ''}
+                </div>
+            `;
+            document.getElementById(`col-${columnId}`).appendChild(div);
+        }
+
+        async function addTask() {
+            const task = {
+                title: document.getElementById('t-title').value,
+                description: document.getElementById('t-desc').value,
+                deadline: document.getElementById('t-date').value,
+                urgency: document.getElementById('t-urgency').value
+            };
+            
+            await fetch(`${API_TASK}/tasks`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(task)
+            });
+            
+            document.getElementById('t-title').value = '';
+            document.getElementById('t-desc').value = '';
+            loadTasks();
+        }
+
+        // --- Drag & Drop ---
+        function allowDrop(ev) { ev.preventDefault(); }
+        
+        async function drop(ev, newStatus) {
+            ev.preventDefault();
+            const taskId = ev.dataTransfer.getData("text");
+            // Visually move immediately
+            const card = document.getElementById(`task-${taskId}`);
+            document.getElementById(`col-${newStatus}`).appendChild(card);
+            
+            await fetch(`${API_TASK}/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+        }
+
+        // --- Modal Logic ---
+        function openEditModal(task) {
+            const modal = document.getElementById('edit-modal');
+            document.getElementById('edit-id').value = task.id;
+            document.getElementById('edit-title').value = task.title;
+            document.getElementById('edit-desc').value = task.description || '';
+            document.getElementById('edit-date').value = task.deadline || '';
+            document.getElementById('edit-urgency').value = task.urgency;
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').style.display = "none";
+        }
+
+        async function saveEdit() {
+            const id = document.getElementById('edit-id').value;
+            const updates = {
+                title: document.getElementById('edit-title').value,
+                description: document.getElementById('edit-desc').value,
+                deadline: document.getElementById('edit-date').value,
+                urgency: document.getElementById('edit-urgency').value
+            };
+
+            await fetch(`${API_TASK}/tasks/${id}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            
+            closeModal();
+            loadTasks();
+        }
+
+        async function deleteTask() {
+            if(!confirm("Are you sure you want to delete this task?")) return;
+            const id = document.getElementById('edit-id').value;
+            
+            await fetch(`${API_TASK}/tasks/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            closeModal();
+            loadTasks();
+        }
+
+        // Close modal if clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('edit-modal');
+            if (event.target == modal) modal.style.display = "none";
+        }
+    </script>
+</body>
+</html>
