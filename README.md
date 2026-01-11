@@ -5,17 +5,17 @@ Acest proiect implementează o aplicație de gestionare a sarcinilor (Task Manag
 ### Arhitectura Sistemului
 Aplicația este compusă din 5 microservicii independente:
 
-1. **Auth Service (Python/Flask)**: Gestionează autentificarea utilizatorilor și validarea token-urilor.
+1. **Auth Service (Python/Flask)**: Gestionează înregisrtarea, autentificarea utilizatorilor și validarea token-urilor.
 
-2. **Task Service (Business Logic - Python/Flask)**: Serviciul principal pentru operațiuni CRUD asupra sarcinilor.
+2. **Task Service (Business Logic - Python/Flask)**: Serviciul principal pentru operațiuni CRUD asupra sarcinilor. Poate fi accesat doar de un token valid (user autentificat) și asigură izolarea datelor între utilizatori.
 
-3. **Database Service (MySQL)**: Stocare persistentă a datelor (folosește PersistentVolumeClaim).
+3. **Database Service (MySQL)**: Stocare persistentă a datelor: utilizatori, token-uri, task-uri (folosește PersistentVolumeClaim).
 
 4. **Adminer**: Interfață grafică pentru administrarea bazei de date MySQL.
 
 5. **Portainer**: Instrument de gestiune vizuală a resurselor din clusterul Kubernetes.
 
-6. **Frontend Service** (Nginx/HTML/JS): Interfață web tip "Weekly Planner" pentru gestionarea sarcinilor.
+6. **Frontend Service** (HTML/JS): Interfață web tip "Weekly Planner" pentru gestionarea sarcinilor, cu funcționalități de Register, Login, Logout și CRUD și drag-and-drop pentru task-uri. 
 
 ### Tehnologii Utilizate
 - **Containerizare**: Docker
@@ -103,9 +103,6 @@ kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op":
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 helm install monitoring prometheus-community/kube-prometheus-stack
-
-# Aflare parolă Grafana
-kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 ```
 
 ### Verificare Funcționalități
@@ -117,9 +114,10 @@ kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | bas
 
 2. Obținere Token:
 ```bash
+curl -X POST http://localhost:5001/register -H "Content-Type: application/json" -d '{"username": "admin", "password": "password"}'
 curl -X POST http://localhost:5001/login -H "Content-Type: application/json" -d '{"username": "admin", "password": "password"}'
 ```
-Se afiseaza un token. Acesta trebuie copiat pentru a fi folosit in urmatorul pas.
+Înregistrarea se poate face cu orice user și parolă (atâta timp cat username-ul nu a fost deja folosit). După logare, se afișează un token. Acesta trebuie copiat pentru a fi folosit in urmatorul pas.
 
 3. Accesare Task-uri:
 ```bash
@@ -130,9 +128,17 @@ curl -H "Authorization: Bearer <TOKEN>" http://localhost:5002/tasks
 Deschideți browserul și accesați: `http://localhost:8081`
 (Asigurați-vă că tunelul către `frontend-service` din pasul 1 este activ).
 
-### Monitorizare
+5. Monitorizare:
 
-Pentru monitorizare grafana:
+Accesare Grafana:
+- `kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo`
 - `kubectl port-forward svc/monitoring-grafana 3000:80`
-Dashboard-ul Grafana va putea fi accesat la `http://localhost:3000`.
-Se recomandă importarea dashboard-ului cu ID: 12708 pentru vizualizarea resurselor clusterului (CPU, Memorie, Pod Status).
+Se accesează `http://localhost:3000`. La login, se folosesc user: `admin` și parola obținută.
+
+Accesare Prometheus:
+- `kubectl port-forward svc/monitoring-prometheus 9090:9090`
+Se accesează `http://localhost:9090`.
+
+Accesare Portainer:
+- `kubectl port-forward svc/portainer-service 9000:9000`
+Se accesează `http://localhost:9000`.
