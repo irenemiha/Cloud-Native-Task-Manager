@@ -1,4 +1,8 @@
 ## Project: Cloud-Native Task Manager (Microservices)
+Anghel Dragoș
+Burnichi Alexandra
+Mușat Irene-Mihaela
+
 ### Obiectiv General
 Acest proiect implementează o aplicație de gestionare a sarcinilor (Task Manager) folosind o arhitectură de tip microservicii, containerizată cu Docker și orchestrată în Kubernetes. Proiectul demonstrează utilizarea conceptelor de Cloud Computing învățate în laboratoarele 1-5.
 
@@ -136,7 +140,7 @@ Accesare Grafana:
 Se accesează `http://localhost:3000`. La login, se folosesc user: `admin` și parola obținută.
 
 Accesare Prometheus:
-- `kubectl port-forward svc/monitoring-prometheus 9090:90`
+- `kubectl port-forward svc/prometheus-operated 9090:9090`
 Se accesează `http://localhost:9090`.
 
 Accesare Portainer:
