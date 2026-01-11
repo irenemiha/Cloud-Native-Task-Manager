@@ -136,7 +136,7 @@ Accesare Grafana:
 Se accesează `http://localhost:3000`. La login, se folosesc user: `admin` și parola obținută.
 
 Accesare Prometheus:
-- `kubectl port-forward svc/monitoring-prometheus 9090:9090`
+- `kubectl port-forward svc/monitoring-prometheus 9090:90`
 Se accesează `http://localhost:9090`.
 
 Accesare Portainer:
