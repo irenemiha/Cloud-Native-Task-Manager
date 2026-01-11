@@ -119,19 +119,20 @@ kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | bas
 ```bash
 curl -X POST http://localhost:5001/login -H "Content-Type: application/json" -d '{"username": "admin", "password": "password"}'
 ```
+Se afiseaza un token. Acesta trebuie copiat pentru a fi folosit in urmatorul pas.
 
 3. Accesare Task-uri:
 ```bash
-curl -H "Authorization: Bearer valid-token-123" http://localhost:5002/tasks
+curl -H "Authorization: Bearer <TOKEN>" http://localhost:5002/tasks
 ```
 
 4. Accesare Frontend:
-
 Deschideți browserul și accesați: `http://localhost:8081`
 (Asigurați-vă că tunelul către `frontend-service` din pasul 1 este activ).
 
 ### Monitorizare
-Dashboard-ul Grafana poate fi accesat la `http://localhost:3000` (după port-forward). Se recomandă importarea dashboard-ului cu ID: 12708 pentru vizualizarea resurselor clusterului (CPU, Memorie, Pod Status).
 
-
-
+Pentru monitorizare grafana:
+- `kubectl port-forward svc/monitoring-grafana 3000:80`
+Dashboard-ul Grafana va putea fi accesat la `http://localhost:3000`.
+Se recomandă importarea dashboard-ului cu ID: 12708 pentru vizualizarea resurselor clusterului (CPU, Memorie, Pod Status).
