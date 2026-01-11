@@ -28,6 +28,18 @@ portainer:
   port: 9000
   nodePort: 30004
 
+metricsServer:
+  enabled: true
+  image: registry.k8s.io/metrics-server/metrics-server:v0.7.2
+  replicas: 1
+  args:
+    - --cert-dir=/tmp
+    - --secure-port=4443
+    - --kubelet-insecure-tls
+    - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
+    - --kubelet-use-node-status-port
+    - --metric-resolution=15s
+
 monitoring:
   enabled: true
   grafanaPort: 30005
