@@ -2,7 +2,7 @@
 Anghel Dragoș | Burnichi Alexandra | Mușat Irene-Mihaela
 
 ### Obiectiv General
-    Acest proiect implementează o aplicație de gestionare a sarcinilor (Task Manager) folosind o arhitectură de tip microservicii, containerizată cu Docker și orchestrată în Kubernetes. Proiectul demonstrează utilizarea conceptelor de Cloud Computing învățate în laboratoarele 1-5.
+Acest proiect implementează o aplicație de gestionare a sarcinilor (Task Manager) folosind o arhitectură de tip microservicii, containerizată cu Docker și orchestrată în Kubernetes. Proiectul demonstrează utilizarea conceptelor de Cloud Computing învățate în laboratoarele 1-5.
 
 ### Arhitectura Sistemului
 Aplicația este compusă din 5 microservicii independente:
@@ -129,24 +129,24 @@ curl -H "Authorization: Bearer <TOKEN>" http://localhost:5002/tasks
 
 **4. Accesare Frontend:**
 
-    Deschideți browserul și accesați: `http://localhost:8081`. (Asigurați-vă că tunelul către `frontend-service` din pasul 1 este activ).
+Deschideți browserul și accesați: `http://localhost:8081`. (Asigurați-vă că tunelul către `frontend-service` din pasul 1 este activ).
 
 **5. Monitorizare:**
 
-    Accesare Grafana:
+Accesare Grafana:
 ```bash
 kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 kubectl port-forward svc/monitoring-grafana 3000:80
 ```
 Se accesează `http://localhost:3000`. La login, se folosesc user: `admin` și parola obținută.
 
-    Accesare Prometheus:
+Accesare Prometheus:
 ```bash
 kubectl port-forward svc/prometheus-operated 9090:9090`
 ```
 Se accesează `http://localhost:9090`.
 
-    Accesare Portainer:
+Accesare Portainer:
 ```bash
 kubectl port-forward svc/portainer-service 9000:9000
 ```
